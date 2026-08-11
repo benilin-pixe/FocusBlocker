@@ -2,33 +2,37 @@
   "manifest_version": 3,
   "name": "FocusBlocker",
   "version": "1.0.0",
-  "description": "Blocks distracting websites such as YouTube Shorts and TikTok.",
+  "description": "Blocks YouTube Shorts and TikTok.",
   "permissions": [
     "storage",
     "tabs",
-    "webNavigation"
+    "alarms"
   ],
   "host_permissions": [
-    "*://*.youtube.com/*",
-    "*://*.tiktok.com/*"
+    "https://www.youtube.com/*",
+    "https://youtube.com/*",
+    "https://www.tiktok.com/*",
+    "https://tiktok.com/*",
+    "https://focusblocker.netlify.app/*"
   ],
   "background": {
     "service_worker": "background.js"
   },
-  "action": {
-    "default_title": "FocusBlocker",
-    "default_popup": "popup.html"
-  },
-  "web_accessible_resources": [
+  "content_scripts": [
     {
-      "resources": [
-        "blocker.html",
-        "blocker.css",
+      "matches": [
+        "https://www.youtube.com/*",
+        "https://youtube.com/*",
+        "https://www.tiktok.com/*",
+        "https://tiktok.com/*"
+      ],
+      "js": [
         "blocker.js"
       ],
-      "matches": [
-        "<all_urls>"
-      ]
+      "run_at": "document_start"
     }
-  ]
+  ],
+  "action": {
+    "default_title": "FocusBlocker"
+  }
 }

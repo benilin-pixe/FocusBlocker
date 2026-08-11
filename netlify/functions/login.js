@@ -1,94 +1,54 @@
+function response(statusCode, data) {
+    return {
+        statusCode,
+        headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-store"
+        },
+        body: JSON.stringify(data)
+    };
+}
+
 exports.handler = async function (event) {
 
     if (event.httpMethod !== "POST") {
-
-        return {
-            statusCode: 405,
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                success: false,
-                message: "Method not allowed"
-            })
-        };
-
+        return response(405, {
+            success: false,
+            message: "Method not allowed"
+        });
     }
 
     try {
 
-        const data =
+        const body =
             JSON.parse(event.body || "{}");
 
-
-        const username =
-            data.username || "";
-
-        const password =
-            data.password || "";
-
-
-        const ADMIN_USERNAME =
-            process.env.ADMIN_USERNAME;
-
-        const ADMIN_PASSWORD =
-            process.env.ADMIN_PASSWORD;
-
-
         if (
-            username === ADMIN_USERNAME &&
-            password === ADMIN_PASSWORD
+            body.username ===
+                process.env.ADMIN_USERNAME &&
+            body.password ===
+                process.env.ADMIN_PASSWORD
         ) {
 
-            return {
-
-                statusCode: 200,
-
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify({
-                    success: true
-                })
-
-            };
+            return response(200, {
+                success: true,
+                message: "Login successful"
+            });
 
         }
 
-
-        return {
-
-            statusCode: 401,
-
-            headers: {
-                "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify({
-                success: false,
-                message: "Invalid username or password"
-            })
-
-        };
+        return response(401, {
+            success: false,
+            message: "Invalid username or password"
+        });
 
     } catch (error) {
 
-        return {
+        console.error(error);
 
-            statusCode: 400,
-
-            headers: {
-                "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify({
-                success: false,
-                message: "Invalid request"
-            })
-
-        };
-
+        return response(400, {
+            success: false,
+            message: "Invalid request"
+        });
     }
-
 };

@@ -1,171 +1,89 @@
-const YOUTUBE_HOSTS = [
-    "youtube.com",
-    "www.youtube.com",
-    "m.youtube.com"
-];
+const SETTINGS_URL =
+    "https://focusblocker.netlify.app/.netlify/functions/settings";
 
-const TIKTOK_HOSTS = [
-    "tiktok.com",
-    "www.tiktok.com",
-    "m.tiktok.com"
-];
+const DEFAULT_SETTINGS = {
+    enabled: true,
+    youtubeShorts: true,
+    tiktok: true
+};
 
 
-chrome.runtime.onInstalled.addListener(() => {
-
-    chrome.storage.local.set({
-
-        youtubeBlocked: true,
-
-        tiktokBlocked: true,
-
-        blockedCount: 0,
-
-        focusMinutes: 0
-
-    });
-
-});
-
-
-function isYouTubeShorts(url) {
+async function updateSettings() {
 
     try {
 
-        const parsed =
-            new URL(url);
+        const response =
+            await fetch(SETTINGS_URL);
 
-        const hostname =
-            parsed.hostname.toLowerCase();
+        if (!response.ok) {
 
-        return (
-            YOUTUBE_HOSTS.includes(hostname)
-            &&
-            parsed.pathname.startsWith("/shorts")
-        );
+            throw new Error(
+                "Unable to download settings"
+            );
 
-    } catch {
-
-        return false;
-
-    }
-
-}
-
-
-function isTikTok(url) {
-
-    try {
-
-        const parsed =
-            new URL(url);
-
-        const hostname =
-            parsed.hostname.toLowerCase();
-
-        return TIKTOK_HOSTS.some(
-            host =>
-                hostname === host ||
-                hostname.endsWith("." + host)
-        );
-
-    } catch {
-
-        return false;
-
-    }
-
-}
-
-
-async function checkBlockedSite(
-    details
-) {
-
-    if (
-        !details.url ||
-        !details.url.startsWith("http")
-    ) {
-        return;
-    }
-
-
-    const settings =
-        await chrome.storage.local.get([
-            "youtubeBlocked",
-            "tiktokBlocked"
-        ]);
-
-
-    let blocked = false;
-
-
-    if (
-        settings.youtubeBlocked !== false
-        &&
-        isYouTubeShorts(details.url)
-    ) {
-
-        blocked = true;
-
-    }
-
-
-    if (
-        settings.tiktokBlocked !== false
-        &&
-        isTikTok(details.url)
-    ) {
-
-        blocked = true;
-
-    }
-
-
-    if (!blocked) {
-        return;
-    }
-
-
-    await chrome.storage.local.set({
-        blockedCount:
-            await getBlockedCount()
-    });
-
-
-    const blockerURL =
-        chrome.runtime.getURL(
-            "blocker.html"
-        )
-        +
-        "?url=" +
-        encodeURIComponent(
-            details.url
-        );
-
-
-    chrome.tabs.update(
-        details.tabId,
-        {
-            url: blockerURL
         }
-    );
 
-}
+        const settings =
+            await response.json();
 
+        await chrome.storage.local.set({
+            focusblocker: settings
+        });
 
-async function getBlockedCount() {
-
-    const data =
-        await chrome.storage.local.get(
-            "blockedCount"
+        console.log(
+            "FocusBlocker settings updated:",
+            settings
         );
 
-    return (data.blockedCount || 0) + 1;
+    } catch (error) {
+
+        console.error(
+            "FocusBlocker settings error:",
+            error
+        );
+
+        await chrome.storage.local.set({
+            focusblocker:
+                DEFAULT_SETTINGS
+        });
+
+    }
 
 }
 
 
-chrome.webNavigation.onCommitted.addListener(
-    checkBlockedSite
+// Install
+chrome.runtime.onInstalled.addListener(
+    updateSettings
+);
+
+
+// Browser startup
+chrome.runtime.onStartup.addListener(
+    updateSettings
+);
+
+
+// Refresh every 60 seconds
+chrome.alarms.create(
+    "refreshSettings",
+    {
+        periodInMinutes: 1
+    }
+);
+
+
+chrome.alarms.onAlarm.addListener(
+    (alarm) => {
+
+        if (
+            alarm.name ===
+            "refreshSettings"
+        ) {
+
+            updateSettings();
+
+        }
+
+    }
 );

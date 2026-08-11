@@ -1,54 +1,80 @@
-function response(statusCode, data) {
-    return {
-        statusCode,
-        headers: {
-            "Content-Type": "application/json",
-            "Cache-Control": "no-store"
-        },
-        body: JSON.stringify(data)
-    };
-}
-
 exports.handler = async function (event) {
 
+    const headers = {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "https://focusblocker.netlify.app",
+        "Access-Control-Allow-Credentials": "true",
+        "Cache-Control": "no-store"
+    };
+
+    if (event.httpMethod === "OPTIONS") {
+        return {
+            statusCode: 200,
+            headers: headers,
+            body: ""
+        };
+    }
+
     if (event.httpMethod !== "POST") {
-        return response(405, {
-            success: false,
-            message: "Method not allowed"
-        });
+        return {
+            statusCode: 405,
+            headers: headers,
+            body: JSON.stringify({
+                message: "Method not allowed"
+            })
+        };
     }
 
     try {
 
-        const body =
-            JSON.parse(event.body || "{}");
+        const body = JSON.parse(
+            event.body || "{}"
+        );
+
+        const username =
+            body.username || "";
+
+        const password =
+            body.password || "";
+
+        const adminUsername =
+            process.env.ADMIN_USERNAME;
+
+        const adminPassword =
+            process.env.ADMIN_PASSWORD;
 
         if (
-            body.username ===
-                process.env.ADMIN_USERNAME &&
-            body.password ===
-                process.env.ADMIN_PASSWORD
+            username !== adminUsername ||
+            password !== adminPassword
         ) {
-
-            return response(200, {
-                success: true,
-                message: "Login successful"
-            });
-
+            return {
+                statusCode: 401,
+                headers: headers,
+                body: JSON.stringify({
+                    message: "Invalid username or password"
+                })
+            };
         }
 
-        return response(401, {
-            success: false,
-            message: "Invalid username or password"
-        });
+        return {
+            statusCode: 200,
+            headers: headers,
+            body: JSON.stringify({
+                success: true,
+                message: "Login successful"
+            })
+        };
 
     } catch (error) {
 
         console.error(error);
 
-        return response(400, {
-            success: false,
-            message: "Invalid request"
-        });
+        return {
+            statusCode: 400,
+            headers: headers,
+            body: JSON.stringify({
+                message: "Invalid request"
+            })
+        };
     }
 };

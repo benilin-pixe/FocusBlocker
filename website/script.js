@@ -1,784 +1,250 @@
-/* ==========================================
-   FOCUSBLOCKER
-   Main Website JavaScript
-   ========================================== */
+cat > website/script.js <<'EOF'
+const API = "/.netlify/functions";
 
+const loginScreen =
+    document.getElementById("loginScreen");
 
-/* ==========================================
-   DATA
-   ========================================== */
+const dashboard =
+    document.getElementById("dashboard");
 
-let state = {
+const loginForm =
+    document.getElementById("loginForm");
 
-    youtubeBlocked: true,
+const loginMessage =
+    document.getElementById("loginMessage");
 
-    tiktokBlocked: true,
+const usernameInput =
+    document.getElementById("username");
 
-    blockedCount: 0,
+const passwordInput =
+    document.getElementById("password");
 
-    focusSeconds: 0,
+const enabled =
+    document.getElementById("enabled");
 
-    focusRunning: false,
+const youtubeShorts =
+    document.getElementById("youtubeShorts");
 
-    goal: 120,
+const tiktok =
+    document.getElementById("tiktok");
 
-    streak: 1
+const saveButton =
+    document.getElementById("saveButton");
 
-};
+const status =
+    document.getElementById("status");
 
+const logoutButton =
+    document.getElementById("logoutButton");
 
-/* ==========================================
-   LOAD SAVED DATA
-   ========================================== */
 
-const saved =
-    JSON.parse(
-        localStorage.getItem(
-            "focusBlocker"
-        )
-    );
+loginForm.addEventListener(
+    "submit",
+    async function (event) {
 
+        event.preventDefault();
 
-if (saved) {
+        loginMessage.textContent =
+            "Logging in...";
 
-    state = {
-        ...state,
-        ...saved
-    };
+        const username =
+            usernameInput.value.trim();
 
-}
+        const password =
+            passwordInput.value;
 
+        try {
 
-/* ==========================================
-   ELEMENTS
-   ========================================== */
+            const response =
+                await fetch(
+                    `${API}/login`,
+                    {
+                        method: "POST",
 
-const timer =
-    document.getElementById("timer");
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
 
-const startFocus =
-    document.getElementById("startFocus");
+                        credentials: "include",
 
-const blockedCount =
-    document.getElementById("blockedCount");
-
-const focusMinutes =
-    document.getElementById("focusMinutes");
-
-const streak =
-    document.getElementById("streak");
-
-const youtubeToggle =
-    document.getElementById("youtubeToggle");
-
-const tiktokToggle =
-    document.getElementById("tiktokToggle");
-
-const youtubeToggleLarge =
-    document.getElementById(
-        "youtubeToggleLarge"
-    );
-
-const tiktokToggleLarge =
-    document.getElementById(
-        "tiktokToggleLarge"
-    );
-
-const youtubeStatus =
-    document.getElementById(
-        "youtubeStatus"
-    );
-
-const tiktokStatus =
-    document.getElementById(
-        "tiktokStatus"
-    );
-
-const goalInput =
-    document.getElementById("goalInput");
-
-const goalProgress =
-    document.getElementById("goalProgress");
-
-const goalBar =
-    document.getElementById("goalBar");
-
-const achievementBar =
-    document.getElementById(
-        "achievementBar"
-    );
-
-const achievementText =
-    document.getElementById(
-        "achievementText"
-    );
-
-const masterToggle =
-    document.getElementById(
-        "masterToggle"
-    );
-
-const resetStats =
-    document.getElementById(
-        "resetStats"
-    );
-
-const themeButton =
-    document.getElementById(
-        "themeButton"
-    );
-
-const addSite =
-    document.getElementById(
-        "addSite"
-    );
-
-
-/* ==========================================
-   SAVE
-   ========================================== */
-
-function saveState() {
-
-    localStorage.setItem(
-        "focusBlocker",
-        JSON.stringify(state)
-    );
-
-}
-
-
-/* ==========================================
-   UPDATE UI
-   ========================================== */
-
-function updateUI() {
-
-    youtubeToggle.checked =
-        state.youtubeBlocked;
-
-    tiktokToggle.checked =
-        state.tiktokBlocked;
-
-    youtubeToggleLarge.checked =
-        state.youtubeBlocked;
-
-    tiktokToggleLarge.checked =
-        state.tiktokBlocked;
-
-    blockedCount.textContent =
-        state.blockedCount;
-
-    focusMinutes.textContent =
-        Math.floor(
-            state.focusSeconds / 60
-        );
-
-    streak.textContent =
-        state.streak;
-
-    goalInput.value =
-        state.goal;
-
-    masterToggle.checked =
-        state.youtubeBlocked ||
-        state.tiktokBlocked;
-
-
-    updateTimer();
-
-    updateWebsiteStatus();
-
-    updateGoal();
-
-}
-
-
-/* ==========================================
-   TIMER
-   ========================================== */
-
-let timerInterval = null;
-
-
-function updateTimer() {
-
-    const hours =
-        Math.floor(
-            state.focusSeconds / 3600
-        );
-
-    const minutes =
-        Math.floor(
-            (state.focusSeconds % 3600) / 60
-        );
-
-    const seconds =
-        state.focusSeconds % 60;
-
-
-    timer.textContent =
-        String(hours).padStart(2, "0")
-        + ":"
-        + String(minutes).padStart(2, "0")
-        + ":"
-        + String(seconds).padStart(2, "0");
-}
-
-
-function startTimer() {
-
-    if (state.focusRunning) {
-        return;
-    }
-
-
-    state.focusRunning = true;
-
-    startFocus.textContent =
-        "■ Stop Focus Session";
-
-
-    timerInterval =
-        setInterval(() => {
-
-            state.focusSeconds++;
-
-            updateTimer();
-
-            updateGoal();
-
-            if (
-                state.focusSeconds % 60 === 0
-            ) {
-
-                saveState();
-
-                focusMinutes.textContent =
-                    Math.floor(
-                        state.focusSeconds / 60
-                    );
-            }
-
-        }, 1000);
-
-
-    saveState();
-
-}
-
-
-function stopTimer() {
-
-    state.focusRunning = false;
-
-    clearInterval(timerInterval);
-
-    startFocus.textContent =
-        "▶ Start Focus Session";
-
-    saveState();
-
-}
-
-
-startFocus.addEventListener(
-    "click",
-    () => {
-
-        if (state.focusRunning) {
-
-            stopTimer();
-
-        } else {
-
-            startTimer();
-
-        }
-
-    }
-);
-
-
-/* ==========================================
-   BLOCKER STATUS
-   ========================================== */
-
-function updateWebsiteStatus() {
-
-    if (state.youtubeBlocked) {
-
-        youtubeStatus.textContent =
-            "● Blocking active";
-
-        youtubeStatus.className =
-            "enabled";
-
-    } else {
-
-        youtubeStatus.textContent =
-            "● Blocking disabled";
-
-        youtubeStatus.className =
-            "disabled";
-
-    }
-
-
-    if (state.tiktokBlocked) {
-
-        tiktokStatus.textContent =
-            "● Blocking active";
-
-        tiktokStatus.className =
-            "enabled";
-
-    } else {
-
-        tiktokStatus.textContent =
-            "● Blocking disabled";
-
-        tiktokStatus.className =
-            "disabled";
-
-    }
-
-}
-
-
-/* ==========================================
-   YOUTUBE
-   ========================================== */
-
-function setYoutube(value) {
-
-    state.youtubeBlocked =
-        value;
-
-    youtubeToggle.checked =
-        value;
-
-    youtubeToggleLarge.checked =
-        value;
-
-    updateWebsiteStatus();
-
-    saveState();
-
-}
-
-
-youtubeToggle.addEventListener(
-    "change",
-    () => {
-
-        setYoutube(
-            youtubeToggle.checked
-        );
-
-    }
-);
-
-
-youtubeToggleLarge.addEventListener(
-    "change",
-    () => {
-
-        setYoutube(
-            youtubeToggleLarge.checked
-        );
-
-    }
-);
-
-
-/* ==========================================
-   TIKTOK
-   ========================================== */
-
-function setTikTok(value) {
-
-    state.tiktokBlocked =
-        value;
-
-    tiktokToggle.checked =
-        value;
-
-    tiktokToggleLarge.checked =
-        value;
-
-    updateWebsiteStatus();
-
-    saveState();
-
-}
-
-
-tiktokToggle.addEventListener(
-    "change",
-    () => {
-
-        setTikTok(
-            tiktokToggle.checked
-        );
-
-    }
-);
-
-
-tiktokToggleLarge.addEventListener(
-    "change",
-    () => {
-
-        setTikTok(
-            tiktokToggleLarge.checked
-        );
-
-    }
-);
-
-
-/* ==========================================
-   MASTER SWITCH
-   ========================================== */
-
-masterToggle.addEventListener(
-    "change",
-    () => {
-
-        const value =
-            masterToggle.checked;
-
-        setYoutube(value);
-
-        setTikTok(value);
-
-    }
-);
-
-
-/* ==========================================
-   GOAL
-   ========================================== */
-
-function updateGoal() {
-
-    const minutes =
-        Math.floor(
-            state.focusSeconds / 60
-        );
-
-
-    const percentage =
-        Math.min(
-            100,
-            (minutes / state.goal) * 100
-        );
-
-
-    goalProgress.textContent =
-        minutes;
-
-
-    goalBar.style.width =
-        percentage + "%";
-
-
-    achievementBar.style.width =
-        percentage + "%";
-
-
-    achievementText.textContent =
-        Math.round(percentage) + "%";
-
-}
-
-
-goalInput.addEventListener(
-    "change",
-    () => {
-
-        let value =
-            parseInt(
-                goalInput.value
-            );
-
-
-        if (
-            isNaN(value) ||
-            value < 10
-        ) {
-
-            value = 10;
-
-        }
-
-
-        if (value > 1440) {
-
-            value = 1440;
-
-        }
-
-
-        state.goal =
-            value;
-
-        goalInput.value =
-            value;
-
-        updateGoal();
-
-        saveState();
-
-    }
-);
-
-
-/* ==========================================
-   NAVIGATION
-   ========================================== */
-
-const navItems =
-    document.querySelectorAll(
-        ".nav-item"
-    );
-
-const sections =
-    document.querySelectorAll(
-        ".section"
-    );
-
-
-function showSection(
-    sectionName
-) {
-
-    sections.forEach(
-        section => {
-
-            section.classList.remove(
-                "active-section"
-            );
-
-        }
-    );
-
-
-    const target =
-        document.getElementById(
-            sectionName
-        );
-
-
-    if (target) {
-
-        target.classList.add(
-            "active-section"
-        );
-
-    }
-
-
-    navItems.forEach(
-        item => {
-
-            item.classList.remove(
-                "active"
-            );
-
-
-            if (
-                item.dataset.section ===
-                sectionName
-            ) {
-
-                item.classList.add(
-                    "active"
+                        body: JSON.stringify({
+                            username: username,
+                            password: password
+                        })
+                    }
                 );
 
+            const data =
+                await response.json();
+
+            if (!response.ok) {
+
+                loginMessage.textContent =
+                    data.message ||
+                    "Login failed.";
+
+                return;
             }
 
+            loginScreen.classList.add(
+                "hidden"
+            );
+
+            dashboard.classList.remove(
+                "hidden"
+            );
+
+            loginMessage.textContent = "";
+
+            await loadSettings();
+
+        } catch (error) {
+
+            console.error(error);
+
+            loginMessage.textContent =
+                "Unable to connect to server.";
         }
-    );
+    }
+);
 
 
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
+async function loadSettings() {
 
+    status.textContent =
+        "Loading settings...";
+
+    try {
+
+        const response =
+            await fetch(
+                `${API}/settings`,
+                {
+                    method: "GET",
+
+                    credentials: "include"
+                }
+            );
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Settings request failed: " +
+                response.status
+            );
+        }
+
+        const data =
+            await response.json();
+
+        enabled.checked =
+            data.enabled === true;
+
+        youtubeShorts.checked =
+            data.youtubeShorts === true;
+
+        tiktok.checked =
+            data.tiktok === true;
+
+        status.textContent =
+            "Settings loaded.";
+
+    } catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+            "Failed to load settings.";
+    }
 }
 
 
-navItems.forEach(
-    item => {
+saveButton.addEventListener(
+    "click",
+    async function () {
 
-        item.addEventListener(
-            "click",
-            () => {
+        status.textContent =
+            "Saving...";
 
-                showSection(
-                    item.dataset.section
+        const settings = {
+
+            enabled:
+                enabled.checked,
+
+            youtubeShorts:
+                youtubeShorts.checked,
+
+            tiktok:
+                tiktok.checked
+        };
+
+        try {
+
+            const response =
+                await fetch(
+                    `${API}/settings`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+
+                            "X-Admin-Username":
+                                usernameInput.value.trim()
+                        },
+
+                        credentials: "include",
+
+                        body:
+                            JSON.stringify(settings)
+                    }
                 );
 
+            const data =
+                await response.json();
+
+            if (!response.ok) {
+
+                status.textContent =
+                    data.message ||
+                    "Save failed.";
+
+                return;
             }
-        );
 
-    }
-);
+            status.textContent =
+                "Settings saved successfully.";
 
+        } catch (error) {
 
-/* Manage all */
+            console.error(error);
 
-document.querySelectorAll(
-    "[data-section-link]"
-).forEach(
-    button => {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                showSection(
-                    button.dataset.sectionLink
-                );
-
-            }
-        );
-
-    }
-);
-
-
-/* ==========================================
-   ADD WEBSITE
-   ========================================== */
-
-addSite.addEventListener(
-    "click",
-    () => {
-
-        const website =
-            prompt(
-                "Enter the website you want to block:"
-            );
-
-
-        if (!website) {
-            return;
+            status.textContent =
+                "Failed to save settings.";
         }
+    }
+);
 
 
-        alert(
-            website +
-            " has been added to your personal block list."
+logoutButton.addEventListener(
+    "click",
+    function () {
+
+        dashboard.classList.add(
+            "hidden"
         );
 
-    }
-);
-
-
-/* ==========================================
-   RESET STATISTICS
-   ========================================== */
-
-resetStats.addEventListener(
-    "click",
-    () => {
-
-        const confirmed =
-            confirm(
-                "Reset today's statistics?"
-            );
-
-
-        if (!confirmed) {
-            return;
-        }
-
-
-        state.blockedCount = 0;
-
-        state.focusSeconds = 0;
-
-        stopTimer();
-
-        updateUI();
-
-        saveState();
-
-    }
-);
-
-
-/* ==========================================
-   DARK / LIGHT MODE
-   ========================================== */
-
-themeButton.addEventListener(
-    "click",
-    () => {
-
-        document.body.classList.toggle(
-            "light"
+        loginScreen.classList.remove(
+            "hidden"
         );
 
+        passwordInput.value = "";
 
-        if (
-            document.body.classList.contains(
-                "light"
-            )
-        ) {
+        status.textContent = "";
 
-            themeButton.textContent =
-                "☀️";
-
-            localStorage.setItem(
-                "theme",
-                "light"
-            );
-
-        } else {
-
-            themeButton.textContent =
-                "🌙";
-
-            localStorage.setItem(
-                "theme",
-                "dark"
-            );
-
-        }
-
+        loginMessage.textContent = "";
     }
 );
-
-
-/* ==========================================
-   LOAD THEME
-   ========================================== */
-
-const savedTheme =
-    localStorage.getItem(
-        "theme"
-    );
-
-
-if (savedTheme === "light") {
-
-    document.body.classList.add(
-        "light"
-    );
-
-    themeButton.textContent =
-        "☀️";
-
-}
-
-
-/* ==========================================
-   INITIALIZE
-   ========================================== */
-
-updateUI();
+EOF

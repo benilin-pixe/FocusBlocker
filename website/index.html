@@ -1,104 +1,176 @@
+cat > website/index.html <<'EOF'
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <title>FocusBlocker Admin</title>
 
-    <title>FocusBlocker</title>
-
-    <link
-        rel="stylesheet"
-        href="style.css"
-    >
-
+    <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
 
-    <main class="public-page">
+    <main class="container">
 
-        <div class="shield">
-            🛡️
-        </div>
+        <!-- LOGIN -->
+        <section id="loginScreen" class="card">
 
-        <h1>
-            FocusBlocker
-        </h1>
+            <div class="logo">🛡️</div>
 
-        <p>
-            This device is protected from
-            distracting websites.
-        </p>
+            <h1>FocusBlocker</h1>
 
-        <div class="blocked-sites">
+            <p class="subtitle">
+                Administrator Login
+            </p>
 
-            <div class="site">
+            <form id="loginForm">
 
-                <span class="site-icon youtube">
-                    ▶
-                </span>
+                <input
+                    id="username"
+                    type="text"
+                    placeholder="Username"
+                    required
+                >
+
+                <input
+                    id="password"
+                    type="password"
+                    placeholder="Password"
+                    required
+                >
+
+                <button type="submit">
+                    Login
+                </button>
+
+            </form>
+
+            <p id="loginMessage"></p>
+
+        </section>
+
+
+        <!-- DASHBOARD -->
+        <section id="dashboard" class="card hidden">
+
+            <div class="top">
 
                 <div>
-                    <strong>
-                        YouTube Shorts
-                    </strong>
+                    <div class="small-logo">🛡️</div>
 
-                    <small>
-                        Blocked
-                    </small>
+                    <h1>FocusBlocker</h1>
+
+                    <p class="subtitle">
+                        Administrator Dashboard
+                    </p>
                 </div>
 
-                <span class="blocked">
-                    BLOCKED
-                </span>
+                <button
+                    id="logoutButton"
+                    class="logout"
+                    type="button"
+                >
+                    Logout
+                </button>
 
             </div>
 
 
-            <div class="site">
+            <div class="settings">
 
-                <span class="site-icon tiktok">
-                    ♪
-                </span>
+                <div class="setting">
 
-                <div>
-                    <strong>
-                        TikTok
-                    </strong>
+                    <div>
+                        <h3>Master Blocking</h3>
 
-                    <small>
-                        Blocked
-                    </small>
+                        <p>
+                            Enable website blocking.
+                        </p>
+                    </div>
+
+                    <label class="switch">
+
+                        <input
+                            id="enabled"
+                            type="checkbox"
+                        >
+
+                        <span class="slider"></span>
+
+                    </label>
+
                 </div>
 
-                <span class="blocked">
-                    BLOCKED
-                </span>
+
+                <div class="setting">
+
+                    <div>
+                        <h3>YouTube Shorts</h3>
+
+                        <p>
+                            Block YouTube Shorts.
+                        </p>
+                    </div>
+
+                    <label class="switch">
+
+                        <input
+                            id="youtubeShorts"
+                            type="checkbox"
+                        >
+
+                        <span class="slider"></span>
+
+                    </label>
+
+                </div>
+
+
+                <div class="setting">
+
+                    <div>
+                        <h3>TikTok</h3>
+
+                        <p>
+                            Block TikTok.
+                        </p>
+                    </div>
+
+                    <label class="switch">
+
+                        <input
+                            id="tiktok"
+                            type="checkbox"
+                        >
+
+                        <span class="slider"></span>
+
+                    </label>
+
+                </div>
 
             </div>
 
-        </div>
 
-        <p class="admin-note">
-            Administrator access required to
-            change blocking settings.
-        </p>
+            <button
+                id="saveButton"
+                class="save"
+                type="button"
+            >
+                Save Settings
+            </button>
 
-        <a
-            href="admin.html"
-            class="admin-link"
-        >
-            Administrator Login
-        </a>
+            <p id="status"></p>
+
+        </section>
 
     </main>
 
-</body>
 
+    <script src="./script.js"></script>
+
+</body>
 </html>
+EOF

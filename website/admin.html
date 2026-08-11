@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>FocusBlocker Admin</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+<body>
+
+    <!-- LOGIN -->
+
+    <div
+        id="loginPage"
+        class="login-page"
+    >
+
+        <div class="login-card">
+
+            <div class="shield">
+                🛡️
+            </div>
+
+            <h1>
+                Administrator
+            </h1>
+
+            <p>
+                Sign in to manage FocusBlocker.
+            </p>
+
+
+            <form id="loginForm">
+
+                <label>
+                    Username
+                </label>
+
+                <input
+                    id="username"
+                    type="text"
+                    placeholder="Administrator"
+                    required
+                >
+
+
+                <label>
+                    Password
+                </label>
+
+                <input
+                    id="password"
+                    type="password"
+                    placeholder="Enter password"
+                    required
+                >
+
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+                    Login
+                </button>
+
+            </form>
+
+
+            <p
+                id="loginError"
+                class="error"
+            ></p>
+
+            <a
+                href="index.html"
+                class="back-link"
+            >
+                ← Back to FocusBlocker
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ADMIN DASHBOARD -->
+
+    <div
+        id="adminPage"
+        class="admin-page hidden"
+    >
+
+        <header class="admin-header">
+
+            <div class="brand">
+
+                <div class="brand-icon">
+                    🛡️
+                </div>
+
+                <div>
+
+                    <h2>
+                        FocusBlocker
+                    </h2>
+
+                    <span>
+                        Administrator Panel
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <button
+                id="logoutButton"
+                class="logout-button"
+            >
+                Logout
+            </button>
+
+        </header>
+
+
+        <main class="admin-content">
+
+            <div class="admin-title">
+
+                <span>
+                    ADMINISTRATOR
+                </span>
+
+                <h1>
+                    Blocking Controls
+                </h1>
+
+                <p>
+                    Manage the websites blocked on
+                    protected devices.
+                </p>
+
+            </div>
+
+
+            <!-- MASTER -->
+
+            <div class="master-card">
+
+                <div>
+
+                    <span class="label">
+                        PROTECTION
+                    </span>
+
+                    <h2>
+                        Master Blocking
+                    </h2>
+
+                    <p>
+                        Enable or disable all website
+                        blocking.
+                    </p>
+
+                </div>
+
+
+                <label class="switch">
+
+                    <input
+                        type="checkbox"
+                        id="masterToggle"
+                        checked
+                    >
+
+                    <span class="slider"></span>
+
+                </label>
+
+            </div>
+
+
+            <!-- YOUTUBE -->
+
+            <div class="control-card">
+
+                <div class="website-icon youtube">
+                    ▶
+                </div>
+
+                <div class="website-info">
+
+                    <h3>
+                        YouTube Shorts
+                    </h3>
+
+                    <p>
+                        Blocks youtube.com/shorts
+                    </p>
+
+                    <span
+                        id="youtubeStatus"
+                        class="status"
+                    >
+                        ● BLOCKING ACTIVE
+                    </span>
+
+                </div>
+
+
+                <label class="switch">
+
+                    <input
+                        type="checkbox"
+                        id="youtubeToggle"
+                        checked
+                    >
+
+                    <span class="slider"></span>
+
+                </label>
+
+            </div>
+
+
+            <!-- TIKTOK -->
+
+            <div class="control-card">
+
+                <div class="website-icon tiktok">
+                    ♪
+                </div>
+
+                <div class="website-info">
+
+                    <h3>
+                        TikTok
+                    </h3>
+
+                    <p>
+                        Blocks tiktok.com
+                    </p>
+
+                    <span
+                        id="tiktokStatus"
+                        class="status"
+                    >
+                        ● BLOCKING ACTIVE
+                    </span>
+
+                </div>
+
+
+                <label class="switch">
+
+                    <input
+                        type="checkbox"
+                        id="tiktokToggle"
+                        checked
+                    >
+
+                    <span class="slider"></span>
+
+                </label>
+
+            </div>
+
+
+            <div class="warning">
+
+                ⚠️
+
+                <div>
+
+                    <strong>
+                        Administrator control
+                    </strong>
+
+                    <p>
+                        Changes made here affect the
+                        FocusBlocker configuration.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <script src="admin.js"></script>
+
+</body>
+
+</html>

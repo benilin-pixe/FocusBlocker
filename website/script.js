@@ -1,158 +1,113 @@
-cat > website/script.js <<'EOF'
 const API = "/.netlify/functions";
 
-const loginScreen =
-    document.getElementById("loginScreen");
+const loginScreen = document.getElementById("loginScreen");
+const dashboard = document.getElementById("dashboard");
 
-const dashboard =
-    document.getElementById("dashboard");
+const loginForm = document.getElementById("loginForm");
+const loginMessage = document.getElementById("loginMessage");
 
-const loginForm =
-    document.getElementById("loginForm");
+const usernameInput = document.getElementById("username");
+const passwordInput = document.getElementById("password");
 
-const loginMessage =
-    document.getElementById("loginMessage");
+const enabled = document.getElementById("enabled");
+const youtubeShorts = document.getElementById("youtubeShorts");
+const tiktok = document.getElementById("tiktok");
 
-const usernameInput =
-    document.getElementById("username");
-
-const passwordInput =
-    document.getElementById("password");
-
-const enabled =
-    document.getElementById("enabled");
-
-const youtubeShorts =
-    document.getElementById("youtubeShorts");
-
-const tiktok =
-    document.getElementById("tiktok");
-
-const saveButton =
-    document.getElementById("saveButton");
-
-const status =
-    document.getElementById("status");
-
-const logoutButton =
-    document.getElementById("logoutButton");
+const saveButton = document.getElementById("saveButton");
+const status = document.getElementById("status");
+const logoutButton = document.getElementById("logoutButton");
 
 
-loginForm.addEventListener(
-    "submit",
-    async function (event) {
+loginForm.addEventListener("submit", async function (event) {
 
-        event.preventDefault();
+    event.preventDefault();
 
-        loginMessage.textContent =
-            "Logging in...";
+    loginMessage.textContent = "Logging in...";
 
-        const username =
-            usernameInput.value.trim();
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
 
-        const password =
-            passwordInput.value;
+    try {
 
-        try {
+        const response = await fetch(
+            `${API}/login`,
+            {
+                method: "POST",
 
-            const response =
-                await fetch(
-                    `${API}/login`,
-                    {
-                        method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
+                credentials: "include",
 
-                        credentials: "include",
-
-                        body: JSON.stringify({
-                            username: username,
-                            password: password
-                        })
-                    }
-                );
-
-            const data =
-                await response.json();
-
-            if (!response.ok) {
-
-                loginMessage.textContent =
-                    data.message ||
-                    "Login failed.";
-
-                return;
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
             }
+        );
 
-            loginScreen.classList.add(
-                "hidden"
-            );
+        const data = await response.json();
 
-            dashboard.classList.remove(
-                "hidden"
-            );
-
-            loginMessage.textContent = "";
-
-            await loadSettings();
-
-        } catch (error) {
-
-            console.error(error);
+        if (!response.ok) {
 
             loginMessage.textContent =
-                "Unable to connect to server.";
+                data.message || "Login failed.";
+
+            return;
         }
+
+        loginScreen.classList.add("hidden");
+        dashboard.classList.remove("hidden");
+
+        loginMessage.textContent = "";
+
+        await loadSettings();
+
+    } catch (error) {
+
+        console.error("Login error:", error);
+
+        loginMessage.textContent =
+            "Unable to connect to server.";
     }
-);
+});
 
 
 async function loadSettings() {
 
-    status.textContent =
-        "Loading settings...";
+    status.textContent = "Loading settings...";
 
     try {
 
-        const response =
-            await fetch(
-                `${API}/settings`,
-                {
-                    method: "GET",
-
-                    credentials: "include"
-                }
-            );
+        const response = await fetch(
+            `${API}/settings`,
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
 
         if (!response.ok) {
-
             throw new Error(
                 "Settings request failed: " +
                 response.status
             );
         }
 
-        const data =
-            await response.json();
+        const data = await response.json();
 
-        enabled.checked =
-            data.enabled === true;
-
+        enabled.checked = data.enabled === true;
         youtubeShorts.checked =
             data.youtubeShorts === true;
-
         tiktok.checked =
             data.tiktok === true;
 
-        status.textContent =
-            "Settings loaded.";
+        status.textContent = "Settings loaded.";
 
     } catch (error) {
 
-        console.error(error);
+        console.error("Settings error:", error);
 
         status.textContent =
             "Failed to load settings.";
@@ -160,91 +115,66 @@ async function loadSettings() {
 }
 
 
-saveButton.addEventListener(
-    "click",
-    async function () {
+saveButton.addEventListener("click", async function () {
+
+    status.textContent = "Saving...";
+
+    const settings = {
+        enabled: enabled.checked,
+        youtubeShorts: youtubeShorts.checked,
+        tiktok: tiktok.checked
+    };
+
+    try {
+
+        const response = await fetch(
+            `${API}/settings`,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json",
+
+                    "X-Admin-Username":
+                        usernameInput.value.trim()
+                },
+
+                credentials: "include",
+
+                body: JSON.stringify(settings)
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+
+            status.textContent =
+                data.message || "Save failed.";
+
+            return;
+        }
 
         status.textContent =
-            "Saving...";
+            "Settings saved successfully.";
 
-        const settings = {
+    } catch (error) {
 
-            enabled:
-                enabled.checked,
+        console.error("Save error:", error);
 
-            youtubeShorts:
-                youtubeShorts.checked,
-
-            tiktok:
-                tiktok.checked
-        };
-
-        try {
-
-            const response =
-                await fetch(
-                    `${API}/settings`,
-                    {
-                        method: "POST",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json",
-
-                            "X-Admin-Username":
-                                usernameInput.value.trim()
-                        },
-
-                        credentials: "include",
-
-                        body:
-                            JSON.stringify(settings)
-                    }
-                );
-
-            const data =
-                await response.json();
-
-            if (!response.ok) {
-
-                status.textContent =
-                    data.message ||
-                    "Save failed.";
-
-                return;
-            }
-
-            status.textContent =
-                "Settings saved successfully.";
-
-        } catch (error) {
-
-            console.error(error);
-
-            status.textContent =
-                "Failed to save settings.";
-        }
+        status.textContent =
+            "Failed to save settings.";
     }
-);
+});
 
 
-logoutButton.addEventListener(
-    "click",
-    function () {
+logoutButton.addEventListener("click", function () {
 
-        dashboard.classList.add(
-            "hidden"
-        );
+    dashboard.classList.add("hidden");
+    loginScreen.classList.remove("hidden");
 
-        loginScreen.classList.remove(
-            "hidden"
-        );
+    passwordInput.value = "";
 
-        passwordInput.value = "";
-
-        status.textContent = "";
-
-        loginMessage.textContent = "";
-    }
-);
-EOF
+    status.textContent = "";
+    loginMessage.textContent = "";
+});
